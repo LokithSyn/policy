@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:6.0
+    container_name: intellipolicy-mongodb
+    ports:
+      - '27017:27017'
+    environment:
+      MONGO_INITDB_DATABASE: intellipolicy
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - mongodb_data:/data/db
+
+  app:
+    build: .
+    container_name: intellipolicy-app
+    ports:
+      - '3000:3000'
+    environment:
+      MONGODB_URI: mongodb://root:password@mongodb:27017/intellipolicy?authSource=admin
+      NODE_ENV: development
+      AUTH0_SECRET: ${AUTH0_SECRET:-your_secret}
+      AUTH0_BASE_URL: http://localhost:3000
+      AUTH0_ISSUER_BASE_URL: ${AUTH0_ISSUER_BASE_URL:-https://your-tenant.auth0.com}
+      AUTH0_CLIENT_ID: ${AUTH0_CLIENT_ID:-your_client_id}
+      AUTH0_CLIENT_SECRET: ${AUTH0_CLIENT_SECRET:-your_client_secret}
+      JWT_SECRET: ${JWT_SECRET:-your_jwt_secret}
+    depends_on:
+      - mongodb
+    volumes:
+      - .:/app
+      - /app/node_modules
+
+volumes:
+  mongodb_data:
