@@ -70,4 +70,4 @@ const ClaimsHistorySchema = new Schema<IClaimsHistory>(
   }
 );
 
-export default mongoose.models.ClaimsHistory || mongoose.model<IClaimsHistory>('ClaimsHistory', ClaimsHistorySchema);
+export default mongoose.models.ClaimsHistory || mongoose.model<IClaimsHistory>('ClaimsHistory', ClaimsHistorySchema, 'claimshistories');

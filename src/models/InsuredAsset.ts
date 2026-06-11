@@ -40,4 +40,4 @@ const InsuredAssetSchema = new Schema<IInsuredAsset>(
   { timestamps: { createdAt: true, updatedAt: false } }
 );
 
-export default mongoose.models.InsuredAsset || mongoose.model('InsuredAsset', InsuredAssetSchema);
+export default mongoose.models.InsuredAsset || mongoose.model('InsuredAsset', InsuredAssetSchema, 'insuredassets');

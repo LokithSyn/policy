@@ -27,4 +27,4 @@ const CoverageSchema = new Schema<ICoverage>(
   { timestamps: true }
 );
 
-export default mongoose.models.Coverage || mongoose.model('Coverage', CoverageSchema);
+export default mongoose.models.Coverage || mongoose.model('Coverage', CoverageSchema, 'coverages');
