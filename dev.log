@@ -1,0 +1,21 @@
+
+> intellipolicy@1.0.0 dev
+> next dev
+
+ ⚠ Port 3000 is in use, trying 3001 instead.
+ ⚠ Port 3001 is in use, trying 3002 instead.
+ ⚠ Port 3002 is in use, trying 3003 instead.
+ ⚠ Port 3003 is in use, trying 3004 instead.
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:3004
+  - Environments: .env.local, .env
+
+ ✓ Starting...
+<w> [webpack.cache.PackFileCacheStrategy] Restoring pack from C:\Users\LokithSaiRamS\OneDrive - Synergech Technology Solutions\Desktop\policy\.next\cache\webpack\client-development.pack.gz failed: TypeError: Cannot read properties of undefined (reading 'hasStartTime')
+ ✓ Ready in 2.6s
+ ✓ Compiled /api/debug in 358ms (58 modules)
+ GET /api/debug 200 in 1141ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 3.6s (539 modules)
+ GET /api/debug 404 in 3775ms
+ ✓ Compiled in 186ms (263 modules)

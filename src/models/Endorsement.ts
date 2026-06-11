@@ -29,4 +29,4 @@ const EndorsementSchema = new Schema<IEndorsement>(
   { timestamps: true }
 );
 
-export default mongoose.models.Endorsement || mongoose.model('Endorsement', EndorsementSchema, 'endorsements');
+export default mongoose.models.Endorsement || mongoose.model('Endorsement', EndorsementSchema, 'Endorsement');

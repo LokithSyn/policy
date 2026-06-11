@@ -104,4 +104,4 @@ const PolicySchema = new Schema<IPolicy>(
   }
 );
 
-export default mongoose.models.Policy || mongoose.model<IPolicy>('Policy', PolicySchema, 'policies');
+export default mongoose.models.Policy || mongoose.model<IPolicy>('Policy', PolicySchema, 'Policy');

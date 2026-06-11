@@ -27,4 +27,4 @@ const PolicyDocumentSchema = new Schema<IPolicyDocument>(
   { timestamps: false }
 );
 
-export default mongoose.models.PolicyDocument || mongoose.model('PolicyDocument', PolicyDocumentSchema, 'policydocuments');
+export default mongoose.models.PolicyDocument || mongoose.model('PolicyDocument', PolicyDocumentSchema, 'PolicyDocument');
