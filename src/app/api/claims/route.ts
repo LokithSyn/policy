@@ -90,7 +90,7 @@ export async function POST(_request: NextRequest) {
     const validated = createClaimSchema.parse(body);
 
     // Check if claim already exists
-    const existing = await Claim.findOne({ claimNumber: validated.claimNumber });
+    const existing = await ClaimsHistory.findOne({ claimNumber: validated.claimNumber });
     if (existing) {
       return NextResponse.json(
         errorResponse('Claim number already exists'),
@@ -98,11 +98,12 @@ export async function POST(_request: NextRequest) {
       );
     }
 
-    const claim = new Claim({
+    const claimId = `CLM-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 1000000)).padStart(6, '0')}`;
+    const claim = new ClaimsHistory({
+      claimId,
       ...validated,
-      admissionDate: new Date(validated.admissionDate),
-      dischargeDate: new Date(validated.dischargeDate),
-      status: validated.status || 'Pending',
+      incidentDate: new Date(validated.incidentDate),
+      claimStatus: validated.claimStatus || 'PENDING',
     });
 
     await claim.save();
