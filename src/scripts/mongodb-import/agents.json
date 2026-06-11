@@ -1,0 +1,162 @@
+[
+  {
+    "agentCode": "AGT-2026-000001",
+    "agentName": "Nikhil Chopra",
+    "branch": "Karnataka",
+    "mobile": "9947967893",
+    "email": "agent0@intellipolicy.com",
+    "status": "ACTIVE"
+  },
+  {
+    "agentCode": "AGT-2026-000002",
+    "agentName": "Nikhil Reddy",
+    "branch": "Telangana",
+    "mobile": "9131954730",
+    "email": "agent1@intellipolicy.com",
+    "status": "INACTIVE"
+  },
+  {
+    "agentCode": "AGT-2026-000003",
+    "agentName": "Deepak Ahmed",
+    "branch": "Haryana",
+    "mobile": "9838283352",
+    "email": "agent2@intellipolicy.com",
+    "status": "ACTIVE"
+  },
+  {
+    "agentCode": "AGT-2026-000004",
+    "agentName": "Neha Mehta",
+    "branch": "Delhi",
+    "mobile": "9623140872",
+    "email": "agent3@intellipolicy.com",
+    "status": "ACTIVE"
+  },
+  {
+    "agentCode": "AGT-2026-000005",
+    "agentName": "Rani Mehta",
+    "branch": "Delhi",
+    "mobile": "9873920954",
+    "email": "agent4@intellipolicy.com",
+    "status": "ACTIVE"
+  },
+  {
+    "agentCode": "AGT-2026-000006",
+    "agentName": "Manoj Desai",
+    "branch": "Punjab",
+    "mobile": "9886880671",
+    "email": "agent5@intellipolicy.com",
+    "status": "INACTIVE"
+  },
+  {
+    "agentCode": "AGT-2026-000007",
+    "agentName": "Varun Rao",
+    "branch": "Gujarat",
+    "mobile": "9837289938",
+    "email": "agent6@intellipolicy.com",
+    "status": "ACTIVE"
+  },
+  {
+    "agentCode": "AGT-2026-000008",
+    "agentName": "Arjun Mehta",
+    "branch": "Tamil Nadu",
+    "mobile": "9525944004",
+    "email": "agent7@intellipolicy.com",
+    "status": "ACTIVE"
+  },
+  {
+    "agentCode": "AGT-2026-000009",
+    "agentName": "Divya Joshi",
+    "branch": "Punjab",
+    "mobile": "9700824434",
+    "email": "agent8@intellipolicy.com",
+    "status": "ACTIVE"
+  },
+  {
+    "agentCode": "AGT-2026-000010",
+    "agentName": "Nikhil Agarwal",
+    "branch": "Punjab",
+    "mobile": "9290640089",
+    "email": "agent9@intellipolicy.com",
+    "status": "INACTIVE"
+  },
+  {
+    "agentCode": "AGT-2026-000011",
+    "agentName": "Meera Pillai",
+    "branch": "Rajasthan",
+    "mobile": "9776678427",
+    "email": "agent10@intellipolicy.com",
+    "status": "INACTIVE"
+  },
+  {
+    "agentCode": "AGT-2026-000012",
+    "agentName": "Rohan Bhat",
+    "branch": "Tamil Nadu",
+    "mobile": "9694243708",
+    "email": "agent11@intellipolicy.com",
+    "status": "ACTIVE"
+  },
+  {
+    "agentCode": "AGT-2026-000013",
+    "agentName": "Anjali Goyal",
+    "branch": "Uttar Pradesh",
+    "mobile": "9695573893",
+    "email": "agent12@intellipolicy.com",
+    "status": "ACTIVE"
+  },
+  {
+    "agentCode": "AGT-2026-000014",
+    "agentName": "Harsh Srivastava",
+    "branch": "Punjab",
+    "mobile": "9625074554",
+    "email": "agent13@intellipolicy.com",
+    "status": "INACTIVE"
+  },
+  {
+    "agentCode": "AGT-2026-000015",
+    "agentName": "Akshay Bhat",
+    "branch": "Delhi",
+    "mobile": "9595495915",
+    "email": "agent14@intellipolicy.com",
+    "status": "ACTIVE"
+  },
+  {
+    "agentCode": "AGT-2026-000016",
+    "agentName": "Meera Agarwal",
+    "branch": "Rajasthan",
+    "mobile": "9705382146",
+    "email": "agent15@intellipolicy.com",
+    "status": "ACTIVE"
+  },
+  {
+    "agentCode": "AGT-2026-000017",
+    "agentName": "Harsh Reddy",
+    "branch": "Delhi",
+    "mobile": "9100134989",
+    "email": "agent16@intellipolicy.com",
+    "status": "ACTIVE"
+  },
+  {
+    "agentCode": "AGT-2026-000018",
+    "agentName": "Meera Joshi",
+    "branch": "Haryana",
+    "mobile": "9519006253",
+    "email": "agent17@intellipolicy.com",
+    "status": "ACTIVE"
+  },
+  {
+    "agentCode": "AGT-2026-000019",
+    "agentName": "Aisha Sharma",
+    "branch": "Telangana",
+    "mobile": "9611062896",
+    "email": "agent18@intellipolicy.com",
+    "status": "INACTIVE"
+  },
+  {
+    "agentCode": "AGT-2026-000020",
+    "agentName": "Rani Pillai",
+    "branch": "Delhi",
+    "mobile": "9102161010",
+    "email": "agent19@intellipolicy.com",
+    "status": "ACTIVE"
+  }
+]

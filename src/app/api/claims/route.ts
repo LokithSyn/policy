@@ -1,18 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db/mongodb';
-import Claim from '@/models/Claim';
+import ClaimsHistory from '@/models/Claim';
+import Policy from '@/models/Policy';
+import Customer from '@/models/Customer';
 import { errorResponse, successResponse } from '@/lib/api-response';
 import { z } from 'zod';
 
 const createClaimSchema = z.object({
   claimNumber: z.string().min(1),
-  policyNumber: z.string().min(1),
-  memberName: z.string().min(1),
-  hospitalName: z.string().min(1),
+  policyId: z.string().min(1),
   claimAmount: z.number().positive(),
-  admissionDate: z.string().datetime(),
-  dischargeDate: z.string().datetime(),
-  status: z.enum(['Pending', 'Approved', 'Rejected', 'Under Review']).optional(),
+  incidentDate: z.string().datetime(),
+  claimStatus: z.enum(['PENDING', 'APPROVED', 'REJECTED', 'UNDER_REVIEW', 'SETTLED']).optional(),
+  claimType: z.enum(['OWN_DAMAGE', 'THIRD_PARTY', 'THEFT', 'MEDICAL', 'FIRE']),
 });
 
 export async function GET(_request: NextRequest) {
@@ -26,28 +26,45 @@ export async function GET(_request: NextRequest) {
 
     const query: any = {};
     if (status) {
-      query.status = status;
+      query.claimStatus = status;
     }
 
     const skip = (page - 1) * limit;
 
     const [claims, total] = await Promise.all([
-      Claim.find(query).skip(skip).limit(limit).sort({ createdAt: -1 }),
-      Claim.countDocuments(query),
+      ClaimsHistory.find(query).skip(skip).limit(limit).sort({ incidentDate: -1 }),
+      ClaimsHistory.countDocuments(query),
     ]);
+
+    // Fetch policy data for all claims
+    const policyIds = [...new Set(claims.map(c => c.policyId))];
+    const policies = await Policy.find({ policyId: { $in: policyIds } });
+    const policyMap = new Map(policies.map(p => [p.policyId, p]));
+
+    // Fetch customer data for all policies
+    const customerIds = [...new Set(policies.map(p => p.customerId))];
+    const customers = await Customer.find({ customerId: { $in: customerIds } });
+    const customerMap = new Map(customers.map(c => [c.customerId, c]));
 
     return NextResponse.json(
       successResponse({
-        claims: claims.map((c) => ({
-          claimNumber: c.claimNumber,
-          policyNumber: c.policyNumber,
-          memberName: c.memberName,
-          hospitalName: c.hospitalName,
-          claimAmount: c.claimAmount,
-          approvedAmount: c.approvedAmount,
-          status: c.status,
-          claimDate: c.claimDate,
-        })),
+        claims: claims.map((c) => {
+          const policy = policyMap.get(c.policyId);
+          const customer = policy ? customerMap.get(policy.customerId) : null;
+          const memberName = customer ? `${customer.firstName} ${customer.lastName}` : 'N/A';
+          const policyNumber = policy?.policyNumber || 'N/A';
+
+          return {
+            claimNumber: c.claimNumber,
+            policyNumber,
+            memberName,
+            hospital: 'N/A', // Not in ClaimsHistory model
+            claimAmount: c.claimAmount,
+            approvedAmount: c.approvedAmount,
+            status: c.claimStatus,
+            incidentDate: c.incidentDate,
+          };
+        }),
         pagination: {
           page,
           limit,

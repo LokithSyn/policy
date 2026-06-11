@@ -26,6 +26,7 @@ const AuditLogSchema = new Schema<IAuditLog>(
     },
     entity: {
       type: String,
+      enum: ['Policy', 'Claim', 'Customer', 'Coverage', 'ClaimsHistory', 'InsuredAsset', 'Endorsement', 'PolicyDocument', 'Agent'],
       required: true,
       index: true,
     },
@@ -53,7 +54,7 @@ const AuditLogSchema = new Schema<IAuditLog>(
     },
   },
   {
-    timestamps: false,
+    timestamps: true,
   }
 );
 

@@ -1,16 +1,9 @@
-import 'dotenv/config';
-import mongoose from 'mongoose';
-import Agent from '../models/Agent';
-import Customer from '../models/Customer';
-import Policy from '../models/Policy';
-import Coverage from '../models/Coverage';
-import InsuredAsset from '../models/InsuredAsset';
-import ClaimsHistory from '../models/Claim';
-import PolicyDocument from '../models/PolicyDocument';
-import Endorsement from '../models/Endorsement';
-import User from '../models/User';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://lokithsairam_db_user:qwertyuiop@policy.6moaurz.mongodb.net/intellipolicy';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const FIRST_NAMES = [
   'Rajesh', 'Amit', 'Vikram', 'Arjun', 'Deepak', 'Sanjay', 'Anil', 'Manoj',
@@ -45,16 +38,9 @@ const CITIES: Record<string, string[]> = {
 };
 
 const INSURERS = [
-  'New India Assurance',
-  'HDFC ERGO',
-  'Bajaj Allianz',
-  'ICICI Lombard',
-  'National Insurance',
-  'Oriental Insurance',
-  'United India Insurance',
-  'Aviva Life Insurance',
-  'TATA AIG',
-  'Reliance General Insurance',
+  'New India Assurance', 'HDFC ERGO', 'Bajaj Allianz', 'ICICI Lombard',
+  'National Insurance', 'Oriental Insurance', 'United India Insurance',
+  'Aviva Life Insurance', 'TATA AIG', 'Reliance General Insurance',
 ];
 
 const VEHICLE_MODELS: Record<string, string[]> = {
@@ -123,13 +109,12 @@ function generateRegistrationNumber(): string {
   return `${stateCode}${String(rtoCode).padStart(2, '0')}${letters}${number}`;
 }
 
-async function seedAgents() {
-  console.log('Seeding agents...');
+function generateAgents() {
   const agents = [];
   for (let i = 0; i < 20; i++) {
-    const agentCode = generateId('AGT', ++agentCounter);
+    agentCounter++;
     agents.push({
-      agentCode,
+      agentCode: generateId('AGT', agentCounter),
       agentName: `${randomElement(FIRST_NAMES)} ${randomElement(LAST_NAMES)}`,
       branch: randomElement(STATES),
       mobile: generateMobileNumber(),
@@ -137,22 +122,20 @@ async function seedAgents() {
       status: Math.random() > 0.1 ? 'ACTIVE' : 'INACTIVE',
     });
   }
-  await Agent.insertMany(agents);
-  console.log(`✓ Created ${agents.length} agents`);
+  return agents;
 }
 
-async function seedCustomers() {
-  console.log('Seeding customers...');
+function generateCustomers() {
   const customers = [];
   for (let i = 0; i < 500; i++) {
-    const customerId = generateId('CUST', ++customerCounter);
+    customerCounter++;
     const state = randomElement(STATES);
     customers.push({
-      customerId,
+      customerId: generateId('CUST', customerCounter),
       customerType: Math.random() > 0.9 ? 'Corporate' : 'Individual',
       firstName: randomElement(FIRST_NAMES),
       lastName: randomElement(LAST_NAMES),
-      dateOfBirth: randomDate(new Date(1950, 0, 1), new Date(2000, 0, 1)),
+      dateOfBirth: randomDate(new Date(1950, 0, 1), new Date(2000, 0, 1)).toISOString(),
       gender: randomElement(['Male', 'Female', 'Other']),
       email: `customer${i}@example.com`,
       mobile: generateMobileNumber(),
@@ -164,18 +147,13 @@ async function seedCustomers() {
       pincode: String(randomInt(100000, 999999)),
     });
   }
-  await Customer.insertMany(customers);
-  console.log(`✓ Created ${customers.length} customers`);
+  return customers;
 }
 
-async function seedPolicies() {
-  console.log('Seeding policies...');
-  const customers = await Customer.find().select('customerId');
-  const agents = await Agent.find().select('agentCode');
-
+function generatePolicies(customers: any[], agents: any[]) {
   const policies = [];
   for (let i = 0; i < 1000; i++) {
-    const policyId = generateId('POL', ++policyCounter);
+    policyCounter++;
     const customer = randomElement(customers);
     const agent = randomElement(agents);
     const issueDate = randomDate(new Date(2023, 0, 1), new Date(2025, 0, 1));
@@ -183,15 +161,15 @@ async function seedPolicies() {
     expiryDate.setFullYear(expiryDate.getFullYear() + 1);
 
     policies.push({
-      policyId,
-      policyNumber: policyId,
+      policyId: generateId('POL', policyCounter),
+      policyNumber: generateId('POL', policyCounter),
       customerId: customer.customerId,
       policyType: randomElement(POLICY_TYPES),
       productCode: `PRD-${randomInt(100, 999)}`,
       insurerName: randomElement(INSURERS),
-      issueDate,
-      effectiveDate: issueDate,
-      expiryDate,
+      issueDate: issueDate.toISOString(),
+      effectiveDate: issueDate.toISOString(),
+      expiryDate: expiryDate.toISOString(),
       premiumAmount: randomInt(10000, 100000),
       sumInsured: randomInt(500000, 2500000),
       policyStatus: Math.random() > 0.2 ? 'ACTIVE' : randomElement(['EXPIRED', 'CANCELLED', 'SUSPENDED']),
@@ -199,50 +177,45 @@ async function seedPolicies() {
       branchCode: `BR-${String(randomInt(1, 50)).padStart(3, '0')}`,
     });
   }
-  await Policy.insertMany(policies);
-  console.log(`✓ Created ${policies.length} policies`);
+  return policies;
 }
 
-async function seedAssets() {
-  console.log('Seeding insured assets...');
-  const policies = await Policy.find().select('policyId');
+function generateAssets(policies: any[]) {
   const assets = [];
   for (let i = 0; i < 800; i++) {
-    const assetId = generateId('AST', ++assetCounter);
+    assetCounter++;
     const policy = randomElement(policies);
-    const make = randomElement(Object.keys(VEHICLE_MODELS));
-    const model = randomElement(VEHICLE_MODELS[make]);
+    const makes = Object.keys(VEHICLE_MODELS);
+    const make = randomElement(makes);
+    const modelName = randomElement(VEHICLE_MODELS[make]);
 
     assets.push({
-      assetId,
+      assetId: generateId('AST', assetCounter),
       policyId: policy.policyId,
       assetType: randomElement(['TwoWheeler', 'FourWheeler', 'Commercial', 'Property']),
       registrationNumber: generateRegistrationNumber(),
       chassisNumber: `CH${String(randomInt(100000000, 999999999))}`,
       engineNumber: `EN${String(randomInt(10000000, 99999999))}`,
       make,
-      modelName: model,
+      modelName,
       manufacturingYear: randomInt(2015, 2024),
       fuelType: randomElement(['Petrol', 'Diesel', 'CNG', 'Electric']),
       marketValue: randomInt(500000, 2000000),
       insuredValue: randomInt(300000, 1500000),
     });
   }
-  await InsuredAsset.insertMany(assets);
-  console.log(`✓ Created ${assets.length} insured assets`);
+  return assets;
 }
 
-async function seedCoverages() {
-  console.log('Seeding coverages...');
-  const policies = await Policy.find().select('policyId');
+function generateCoverages(policies: any[]) {
   const coverages = [];
   for (let i = 0; i < 1500; i++) {
-    const coverageId = generateId('COV', ++coverageCounter);
+    coverageCounter++;
     const policy = randomElement(policies);
     const coverageCode = randomElement(COVERAGE_CODES);
 
     coverages.push({
-      coverageId,
+      coverageId: generateId('COV', coverageCounter),
       policyId: policy.policyId,
       coverageCode,
       coverageName: COVERAGE_NAMES[coverageCode],
@@ -251,155 +224,117 @@ async function seedCoverages() {
       status: Math.random() > 0.1 ? 'ACTIVE' : 'INACTIVE',
     });
   }
-  await Coverage.insertMany(coverages);
-  console.log(`✓ Created ${coverages.length} coverages`);
+  return coverages;
 }
 
-async function seedClaims() {
-  console.log('Seeding claims history...');
-  const policies = await Policy.find().select('policyId');
+function generateClaims(policies: any[]) {
   const claims = [];
   for (let i = 0; i < 300; i++) {
-    const claimId = generateId('CLM', ++claimCounter);
+    claimCounter++;
     const policy = randomElement(policies);
     const incidentDate = randomDate(new Date(2023, 0, 1), new Date());
 
     claims.push({
-      claimId,
+      claimId: generateId('CLM', claimCounter),
       policyId: policy.policyId,
-      claimNumber: claimId,
-      incidentDate,
-      settlementDate: Math.random() > 0.3 ? randomDate(incidentDate, new Date()) : null,
+      claimNumber: generateId('CLM', claimCounter),
+      incidentDate: incidentDate.toISOString(),
+      settlementDate: Math.random() > 0.3 ? randomDate(incidentDate, new Date()).toISOString() : null,
       claimAmount: randomInt(50000, 500000),
       approvedAmount: randomInt(0, 500000),
       claimStatus: randomElement(['PENDING', 'APPROVED', 'REJECTED', 'UNDER_REVIEW', 'SETTLED']),
       claimType: randomElement(CLAIM_TYPES),
     });
   }
-  await ClaimsHistory.insertMany(claims);
-  console.log(`✓ Created ${claims.length} claims`);
+  return claims;
 }
 
-async function seedDocuments() {
-  console.log('Seeding policy documents...');
-  const policies = await Policy.find().select('policyId');
+function generateDocuments(policies: any[]) {
   const documents = [];
   for (let i = 0; i < 500; i++) {
-    const documentId = generateId('DOC', ++docCounter);
+    docCounter++;
     const policy = randomElement(policies);
     const docType = randomElement(DOCUMENT_TYPES);
 
     documents.push({
-      documentId,
+      documentId: generateId('DOC', docCounter),
       policyId: policy.policyId,
       documentType: docType,
       fileName: `${policy.policyId}_${docType}.pdf`,
       storagePath: `storage/documents/${policy.policyId}/${docType}.pdf`,
-      uploadedAt: new Date(),
+      uploadedAt: new Date().toISOString(),
     });
   }
-  await PolicyDocument.insertMany(documents);
-  console.log(`✓ Created ${documents.length} policy documents`);
+  return documents;
 }
 
-async function seedEndorsements() {
-  console.log('Seeding endorsements...');
-  const policies = await Policy.find().select('policyId');
+function generateEndorsements(policies: any[]) {
   const endorsements = [];
   for (let i = 0; i < 200; i++) {
-    const endorsementId = generateId('END', ++endorsementCounter);
+    endorsementCounter++;
     const policy = randomElement(policies);
     const endorsementDate = randomDate(new Date(2023, 0, 1), new Date());
 
     endorsements.push({
-      endorsementId,
+      endorsementId: generateId('END', endorsementCounter),
       policyId: policy.policyId,
       endorsementType: randomElement(ENDORSEMENT_TYPES),
-      endorsementDate,
-      effectiveDate: endorsementDate,
+      endorsementDate: endorsementDate.toISOString(),
+      effectiveDate: endorsementDate.toISOString(),
       description: 'Policy modification',
     });
   }
-  await Endorsement.insertMany(endorsements);
-  console.log(`✓ Created ${endorsements.length} endorsements`);
+  return endorsements;
 }
 
-async function seedUsers() {
-  console.log('Seeding users...');
-  const roles = ['Administrator', 'Claims Processor', 'Read Only Auditor'];
-  const users = [];
-  for (let i = 0; i < 50; i++) {
-    users.push({
-      auth0Id: `auth0|${i}`,
-      email: `user${i}@intellipolicy.com`,
-      name: `${randomElement(FIRST_NAMES)} ${randomElement(LAST_NAMES)}`,
-      role: randomElement(roles),
-      organization: 'IntelliDoc',
-      lastLogin: new Date(),
-    });
+function main() {
+  const outputDir = path.join(__dirname, 'mongodb-import');
+  if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true });
   }
-  await User.insertMany(users);
-  console.log(`✓ Created ${users.length} users`);
-}
 
-async function main() {
-  try {
-    console.log('🌱 Starting database seed...');
-    console.log('📍 Connecting to:', MONGODB_URI.replace(/:[^@]*@/, ':****@'));
-    await mongoose.connect(MONGODB_URI);
-    console.log('✓ Connected to MongoDB');
+  console.log('📝 Generating import files...\n');
 
-    // Drop sample_mflix collection if it exists
-    try {
-      await mongoose.connection.collection('sample_mflix').drop();
-      console.log('✓ Dropped sample_mflix collection');
-    } catch (error: any) {
-      if (error.code !== 26) { // 26 = namespace not found
-        console.warn('⚠ Could not drop sample_mflix:', error.message);
-      }
-    }
+  const agents = generateAgents();
+  fs.writeFileSync(path.join(outputDir, 'agents.json'), JSON.stringify(agents, null, 2));
+  console.log(`✓ agents.json - ${agents.length} records`);
 
-    // Clear existing collections
-    await Agent.deleteMany({});
-    await Customer.deleteMany({});
-    await Policy.deleteMany({});
-    await Coverage.deleteMany({});
-    await InsuredAsset.deleteMany({});
-    await ClaimsHistory.deleteMany({});
-    await PolicyDocument.deleteMany({});
-    await Endorsement.deleteMany({});
-    await User.deleteMany({});
-    console.log('✓ Cleared all data tables');
+  const customers = generateCustomers();
+  fs.writeFileSync(path.join(outputDir, 'customers.json'), JSON.stringify(customers, null, 2));
+  console.log(`✓ customers.json - ${customers.length} records`);
 
-    await seedAgents();
-    await seedCustomers();
-    await seedPolicies();
-    await seedAssets();
-    await seedCoverages();
-    await seedClaims();
-    await seedDocuments();
-    await seedEndorsements();
-    await seedUsers();
+  const policies = generatePolicies(customers, agents);
+  fs.writeFileSync(path.join(outputDir, 'policies.json'), JSON.stringify(policies, null, 2));
+  console.log(`✓ policies.json - ${policies.length} records`);
 
-    console.log('\n✅ Seed completed successfully!');
-    console.log(`Total records seeded:
-      - Agents: 20
-      - Customers: 500
-      - Policies: 1,000
-      - Insured Assets: 800
-      - Coverages: 1,500
-      - Claims: 300
-      - Documents: 500
-      - Endorsements: 200
-    `);
+  const assets = generateAssets(policies);
+  fs.writeFileSync(path.join(outputDir, 'insuredAssets.json'), JSON.stringify(assets, null, 2));
+  console.log(`✓ insuredAssets.json - ${assets.length} records`);
 
-    await mongoose.disconnect();
-    console.log('✓ Disconnected from MongoDB');
-    process.exit(0);
-  } catch (error) {
-    console.error('❌ Seed failed:', error);
-    process.exit(1);
-  }
+  const coverages = generateCoverages(policies);
+  fs.writeFileSync(path.join(outputDir, 'coverages.json'), JSON.stringify(coverages, null, 2));
+  console.log(`✓ coverages.json - ${coverages.length} records`);
+
+  const claims = generateClaims(policies);
+  fs.writeFileSync(path.join(outputDir, 'claimsHistory.json'), JSON.stringify(claims, null, 2));
+  console.log(`✓ claimsHistory.json - ${claims.length} records`);
+
+  const documents = generateDocuments(policies);
+  fs.writeFileSync(path.join(outputDir, 'policyDocuments.json'), JSON.stringify(documents, null, 2));
+  console.log(`✓ policyDocuments.json - ${documents.length} records`);
+
+  const endorsements = generateEndorsements(policies);
+  fs.writeFileSync(path.join(outputDir, 'endorsements.json'), JSON.stringify(endorsements, null, 2));
+  console.log(`✓ endorsements.json - ${endorsements.length} records`);
+
+  console.log(`\n✅ All files generated in: ${outputDir}`);
+  console.log('\n📥 Import instructions:');
+  console.log('1. Open MongoDB Compass');
+  console.log('2. Connect to policy.6moaurz.mongodb.net');
+  console.log('3. Go to intellipolicy database');
+  console.log('4. Click "+ Create collection" for each collection:');
+  console.log('   - Agent, Customer, Policy, Coverage, InsuredAsset, ClaimsHistory, PolicyDocument, Endorsement');
+  console.log('5. For each collection, click "+" → "Import data" → select the JSON file from mongodb-import folder');
 }
 
 main();

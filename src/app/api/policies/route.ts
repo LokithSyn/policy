@@ -1,24 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db/mongodb';
 import Policy from '@/models/Policy';
+import Customer from '@/models/Customer';
 import { errorResponse, successResponse } from '@/lib/api-response';
 import { z } from 'zod';
 
 const createPolicySchema = z.object({
   policyNumber: z.string().min(1),
-  memberId: z.string().min(1),
-  memberName: z.string().min(1),
-  dob: z.string().datetime(),
-  gender: z.enum(['Male', 'Female', 'Other']),
-  email: z.string().email(),
-  phone: z.string(),
-  policyType: z.enum(['Individual', 'Family Floater', 'Corporate']),
+  customerId: z.string().min(1),
+  policyType: z.enum(['Motor', 'Health', 'Property', 'Life', 'Travel']),
+  productCode: z.string().min(1),
+  insurerName: z.string().min(1),
+  issueDate: z.string().datetime(),
+  effectiveDate: z.string().datetime(),
+  expiryDate: z.string().datetime(),
+  premiumAmount: z.number().positive(),
   sumInsured: z.number().positive(),
-  deductible: z.number().nonnegative().optional(),
-  coPay: z.number().nonnegative().optional(),
-  startDate: z.string().datetime(),
-  endDate: z.string().datetime(),
-  status: z.enum(['Active', 'Expired', 'Suspended']).optional(),
+  policyStatus: z.enum(['ACTIVE', 'EXPIRED', 'CANCELLED', 'SUSPENDED']).optional(),
+  agentCode: z.string().optional(),
+  branchCode: z.string().optional(),
 });
 
 export async function GET(_request: NextRequest) {
@@ -36,13 +36,12 @@ export async function GET(_request: NextRequest) {
     if (search) {
       query.$or = [
         { policyNumber: { $regex: search, $options: 'i' } },
-        { memberName: { $regex: search, $options: 'i' } },
-        { memberId: { $regex: search, $options: 'i' } },
+        { customerId: { $regex: search, $options: 'i' } },
       ];
     }
 
     if (status) {
-      query.status = status;
+      query.policyStatus = status;
     }
 
     const skip = (page - 1) * limit;
@@ -52,18 +51,30 @@ export async function GET(_request: NextRequest) {
       Policy.countDocuments(query),
     ]);
 
+    // Fetch customer data for all policies
+    const customerIds = [...new Set(policies.map(p => p.customerId))];
+    const customers = await Customer.find({ customerId: { $in: customerIds } });
+    const customerMap = new Map(customers.map(c => [c.customerId, c]));
+
     return NextResponse.json(
       successResponse({
-        policies: policies.map((p) => ({
-          policyNumber: p.policyNumber,
-          memberName: p.memberName,
-          memberId: p.memberId,
-          policyType: p.policyType,
-          sumInsured: p.sumInsured,
-          status: p.status,
-          startDate: p.startDate,
-          endDate: p.endDate,
-        })),
+        policies: policies.map((p) => {
+          const customer = customerMap.get(p.customerId);
+          const memberName = customer ? `${customer.firstName} ${customer.lastName}` : 'N/A';
+          return {
+            policyId: p.policyId,
+            policyNumber: p.policyNumber,
+            customerId: p.customerId,
+            memberName,
+            memberId: p.customerId,
+            policyType: p.policyType,
+            sumInsured: p.sumInsured,
+            status: p.policyStatus,
+            policyStatus: p.policyStatus,
+            effectiveDate: p.effectiveDate,
+            expiryDate: p.expiryDate,
+          };
+        }),
         pagination: {
           page,
           limit,
@@ -89,7 +100,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validated = createPolicySchema.parse(body);
 
-    // Check if policy already exists
     const existing = await Policy.findOne({ policyNumber: validated.policyNumber });
     if (existing) {
       return NextResponse.json(
@@ -98,14 +108,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const policyId = `POL-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 1000000)).padStart(6, '0')}`;
     const policy = new Policy({
+      policyId,
       ...validated,
-      dob: new Date(validated.dob),
-      startDate: new Date(validated.startDate),
-      endDate: new Date(validated.endDate),
-      deductible: validated.deductible || 0,
-      coPay: validated.coPay || 0,
-      status: validated.status || 'Active',
+      issueDate: new Date(validated.issueDate),
+      effectiveDate: new Date(validated.effectiveDate),
+      expiryDate: new Date(validated.expiryDate),
+      policyStatus: validated.policyStatus || 'ACTIVE',
     });
 
     await policy.save();

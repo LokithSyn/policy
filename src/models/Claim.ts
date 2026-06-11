@@ -1,41 +1,49 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-export interface IClaim extends Document {
+export interface IClaimsHistory extends Document {
+  claimId: string;
+  policyId: string;
+  policy?: mongoose.Types.ObjectId;
   claimNumber: string;
-  policyNumber: string;
-  memberName: string;
-  hospitalName: string;
+  incidentDate: Date;
+  settlementDate?: Date;
   claimAmount: number;
   approvedAmount: number;
-  claimDate: Date;
-  admissionDate: Date;
-  dischargeDate: Date;
-  status: 'Pending' | 'Approved' | 'Rejected' | 'Under Review';
-  reason?: string;
+  claimStatus: 'PENDING' | 'APPROVED' | 'REJECTED' | 'UNDER_REVIEW' | 'SETTLED';
+  claimType: 'OWN_DAMAGE' | 'THIRD_PARTY' | 'THEFT' | 'MEDICAL' | 'FIRE';
   createdAt: Date;
   updatedAt: Date;
 }
 
-const ClaimSchema = new Schema<IClaim>(
+const ClaimsHistorySchema = new Schema<IClaimsHistory>(
   {
+    claimId: {
+      type: String,
+      required: true,
+      unique: true,
+      index: true,
+    },
+    policyId: {
+      type: String,
+      required: true,
+      index: true,
+    },
+    policy: {
+      type: Schema.Types.ObjectId,
+      ref: 'Policy',
+    },
     claimNumber: {
       type: String,
       required: true,
       unique: true,
       index: true,
     },
-    policyNumber: {
-      type: String,
-      required: true,
-      index: true,
-    },
-    memberName: {
-      type: String,
+    incidentDate: {
+      type: Date,
       required: true,
     },
-    hospitalName: {
-      type: String,
-      required: true,
+    settlementDate: {
+      type: Date,
     },
     claimAmount: {
       type: Number,
@@ -45,26 +53,16 @@ const ClaimSchema = new Schema<IClaim>(
       type: Number,
       default: 0,
     },
-    claimDate: {
-      type: Date,
-      default: Date.now,
-    },
-    admissionDate: {
-      type: Date,
-      required: true,
-    },
-    dischargeDate: {
-      type: Date,
-      required: true,
-    },
-    status: {
+    claimStatus: {
       type: String,
-      enum: ['Pending', 'Approved', 'Rejected', 'Under Review'],
-      default: 'Pending',
+      enum: ['PENDING', 'APPROVED', 'REJECTED', 'UNDER_REVIEW', 'SETTLED'],
+      default: 'PENDING',
       index: true,
     },
-    reason: {
+    claimType: {
       type: String,
+      enum: ['OWN_DAMAGE', 'THIRD_PARTY', 'THEFT', 'MEDICAL', 'FIRE'],
+      required: true,
     },
   },
   {
@@ -72,4 +70,4 @@ const ClaimSchema = new Schema<IClaim>(
   }
 );
 
-export default mongoose.models.Claim || mongoose.model<IClaim>('Claim', ClaimSchema);
+export default mongoose.models.ClaimsHistory || mongoose.model<IClaimsHistory>('ClaimsHistory', ClaimsHistorySchema);

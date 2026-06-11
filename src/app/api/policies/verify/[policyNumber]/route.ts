@@ -2,21 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db/mongodb';
 import { validateClaim } from '@/lib/claims-validator';
 import { errorResponse, successResponse } from '@/lib/api-response';
-import { z } from 'zod';
 
-const validateClaimSchema = z.object({
-  policyNumber: z.string().min(1),
-  claimAmount: z.number().nonnegative(),
-});
-
-export async function POST(_request: NextRequest) {
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: { policyNumber: string } }
+) {
   try {
     await connectDB();
 
-    const body = await _request.json();
-    const validated = validateClaimSchema.parse(body);
-
-    const result = await validateClaim(validated.policyNumber, validated.claimAmount);
+    const result = await validateClaim(params.policyNumber, 0);
 
     return NextResponse.json(
       successResponse({
@@ -27,17 +21,10 @@ export async function POST(_request: NextRequest) {
         claimCount: result.claimCount,
         fraudAlert: result.fraudAlert,
         rejectionReason: result.rejectionReason,
-        approvedAmount: result.approvedAmount,
       })
     );
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        errorResponse(error.errors[0].message),
-        { status: 400 }
-      );
-    }
-    console.error('Error validating claim:', error);
+    console.error('Error verifying policy:', error);
     return NextResponse.json(
       errorResponse('Internal server error'),
       { status: 500 }

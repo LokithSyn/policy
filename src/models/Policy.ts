@@ -1,88 +1,102 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IPolicy extends Document {
+  policyId: string;
   policyNumber: string;
-  memberId: string;
-  memberName: string;
-  dob: Date;
-  gender: 'Male' | 'Female' | 'Other';
-  email: string;
-  phone: string;
-  policyType: 'Individual' | 'Family Floater' | 'Corporate';
+  customerId: string;
+  customer?: mongoose.Types.ObjectId;
+  policyType: 'Motor' | 'Health' | 'Property' | 'Life' | 'Travel';
+  productCode: string;
+  insurerName: string;
+  issueDate: Date;
+  effectiveDate: Date;
+  expiryDate: Date;
+  premiumAmount: number;
   sumInsured: number;
-  deductible: number;
-  coPay: number;
-  startDate: Date;
-  endDate: Date;
-  status: 'Active' | 'Expired' | 'Suspended';
+  policyStatus: 'ACTIVE' | 'EXPIRED' | 'CANCELLED' | 'SUSPENDED';
+  agentCode?: string;
+  agent?: mongoose.Types.ObjectId;
+  branchCode?: string;
+  renewalPolicyNumber?: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
 const PolicySchema = new Schema<IPolicy>(
   {
+    policyId: {
+      type: String,
+      required: true,
+      unique: true,
+      index: true,
+    },
     policyNumber: {
       type: String,
       required: true,
       unique: true,
       index: true,
     },
-    memberId: {
+    customerId: {
       type: String,
       required: true,
       index: true,
     },
-    memberName: {
-      type: String,
-      required: true,
-    },
-    dob: {
-      type: Date,
-      required: true,
-    },
-    gender: {
-      type: String,
-      enum: ['Male', 'Female', 'Other'],
-      required: true,
-    },
-    email: {
-      type: String,
-      required: true,
-    },
-    phone: {
-      type: String,
-      required: true,
+    customer: {
+      type: Schema.Types.ObjectId,
+      ref: 'Customer',
     },
     policyType: {
       type: String,
-      enum: ['Individual', 'Family Floater', 'Corporate'],
+      enum: ['Motor', 'Health', 'Property', 'Life', 'Travel'],
+      required: true,
+    },
+    productCode: {
+      type: String,
+      required: true,
+    },
+    insurerName: {
+      type: String,
+      required: true,
+    },
+    issueDate: {
+      type: Date,
+      required: true,
+    },
+    effectiveDate: {
+      type: Date,
+      required: true,
+    },
+    expiryDate: {
+      type: Date,
+      required: true,
+    },
+    premiumAmount: {
+      type: Number,
       required: true,
     },
     sumInsured: {
       type: Number,
       required: true,
     },
-    deductible: {
-      type: Number,
-      default: 0,
-    },
-    coPay: {
-      type: Number,
-      default: 0,
-    },
-    startDate: {
-      type: Date,
-      required: true,
-    },
-    endDate: {
-      type: Date,
-      required: true,
-    },
-    status: {
+    policyStatus: {
       type: String,
-      enum: ['Active', 'Expired', 'Suspended'],
-      default: 'Active',
+      enum: ['ACTIVE', 'EXPIRED', 'CANCELLED', 'SUSPENDED'],
+      default: 'ACTIVE',
       index: true,
+    },
+    agentCode: {
+      type: String,
+      index: true,
+    },
+    agent: {
+      type: Schema.Types.ObjectId,
+      ref: 'Agent',
+    },
+    branchCode: {
+      type: String,
+    },
+    renewalPolicyNumber: {
+      type: String,
     },
   },
   {

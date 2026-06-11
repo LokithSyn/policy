@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db/mongodb';
 import Policy from '@/models/Policy';
+import Customer from '@/models/Customer';
 import { errorResponse, successResponse } from '@/lib/api-response';
 
 export async function GET(
@@ -10,9 +11,7 @@ export async function GET(
   try {
     await connectDB();
 
-    const policy = await Policy.findOne({
-      policyNumber: params.policyNumber,
-    });
+    const policy = await Policy.findOne({ policyNumber: params.policyNumber });
 
     if (!policy) {
       return NextResponse.json(
@@ -21,20 +20,25 @@ export async function GET(
       );
     }
 
+    // Fetch customer data by customerId
+    const customer = await Customer.findOne({ customerId: policy.customerId });
+    const customerName = customer ? `${customer.firstName} ${customer.lastName}` : 'Unknown';
+
     return NextResponse.json(
       successResponse({
+        policyId: policy.policyId,
         policyNumber: policy.policyNumber,
-        memberName: policy.memberName,
-        memberId: policy.memberId,
-        dob: policy.dob,
+        customerId: policy.customerId,
+        customerName,
         policyType: policy.policyType,
         sumInsured: policy.sumInsured,
-        deductible: policy.deductible,
-        coPay: policy.coPay,
-        status: policy.status,
-        startDate: policy.startDate,
-        endDate: policy.endDate,
-        eligible: policy.status === 'Active',
+        policyStatus: policy.policyStatus,
+        effectiveDate: policy.effectiveDate,
+        expiryDate: policy.expiryDate,
+        premiumAmount: policy.premiumAmount,
+        insurerName: policy.insurerName,
+        productCode: policy.productCode,
+        eligible: policy.policyStatus === 'ACTIVE',
       })
     );
   } catch (error) {
