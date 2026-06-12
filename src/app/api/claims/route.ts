@@ -12,7 +12,12 @@ const createClaimSchema = z.object({
   claimAmount: z.number().positive(),
   incidentDate: z.string().datetime(),
   claimStatus: z.enum(['PENDING', 'APPROVED', 'REJECTED', 'UNDER_REVIEW', 'SETTLED']).optional(),
-  claimType: z.enum(['OWN_DAMAGE', 'THIRD_PARTY', 'THEFT', 'MEDICAL', 'FIRE']),
+  claimType: z.enum(['OWN_DAMAGE', 'THIRD_PARTY', 'THEFT', 'MEDICAL', 'FIRE', 'PROPERTY_DAMAGE', 'NATURAL_DISASTER']),
+  fnolId: z.string().optional(),
+  fnolNumber: z.string().optional(),
+  vehicleNumber: z.string().optional(),
+  description: z.string().optional(),
+  incidentLocation: z.string().optional(),
 });
 
 export async function GET(_request: NextRequest) {
@@ -23,10 +28,19 @@ export async function GET(_request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
     const status = searchParams.get('status') || '';
+    const workflowStatus = searchParams.get('workflowStatus') || '';
+    const claimType = searchParams.get('claimType') || '';
+    const search = searchParams.get('search') || '';
 
     const query: any = {};
-    if (status) {
-      query.claimStatus = status;
+    if (status) query.claimStatus = status;
+    if (workflowStatus) query.workflowStatus = workflowStatus;
+    if (claimType) query.claimType = claimType;
+    if (search) {
+      query.$or = [
+        { claimNumber: { $regex: search, $options: 'i' } },
+        { fnolNumber: { $regex: search, $options: 'i' } },
+      ];
     }
 
     const skip = (page - 1) * limit;
@@ -55,14 +69,18 @@ export async function GET(_request: NextRequest) {
           const policyNumber = policy?.policyNumber || 'N/A';
 
           return {
+            claimId: c.claimId,
             claimNumber: c.claimNumber,
             policyNumber,
             memberName,
-            hospital: 'N/A', // Not in ClaimsHistory model
             claimAmount: c.claimAmount,
             approvedAmount: c.approvedAmount,
             status: c.claimStatus,
+            workflowStatus: c.workflowStatus,
+            claimType: c.claimType,
             incidentDate: c.incidentDate,
+            isFraudulent: c.isFraudulent,
+            fraudFlags: c.fraudFlags,
           };
         }),
         pagination: {

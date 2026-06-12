@@ -5,10 +5,11 @@ import { usePathname } from 'next/navigation';
 import React, { useState } from 'react';
 
 const menuItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: '📊' },
+  { href: '/dashboard', label: 'Workbench', icon: '📊' },
   { href: '/policies', label: 'Policies', icon: '📋' },
-  { href: '/claims', label: 'Claims', icon: '🏥' },
-  { href: '/settings', label: 'Settings', icon: '⚙️' },
+  { href: '/claims', label: 'Claims Queue', icon: '🗂' },
+  { href: '/configuration', label: 'Configuration', icon: '⚙️' },
+  { href: '/settings', label: 'Settings', icon: '🔧' },
 ];
 
 export function Sidebar() {

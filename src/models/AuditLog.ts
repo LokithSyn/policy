@@ -26,7 +26,13 @@ const AuditLogSchema = new Schema<IAuditLog>(
     },
     entity: {
       type: String,
-      enum: ['Policy', 'Claim', 'Customer', 'Coverage', 'ClaimsHistory', 'InsuredAsset', 'Endorsement', 'PolicyDocument', 'Agent'],
+      enum: [
+        'Policy', 'Claim', 'Customer', 'Coverage', 'ClaimsHistory',
+        'InsuredAsset', 'Endorsement', 'PolicyDocument', 'Agent',
+        'ClaimDocument', 'ClaimTimeline', 'WorkflowHistory',
+        'ValidationRule', 'FraudRule', 'ClaimDocumentRule',
+        'WorkflowDefinition', 'FnolValidation',
+      ],
       required: true,
       index: true,
     },

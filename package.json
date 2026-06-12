@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "seed": "ts-node -P tsconfig.scripts.json src/scripts/seed.ts",
+    "seed:platform": "ts-node -P tsconfig.scripts.json src/scripts/seed-platform-config.ts",
     "type-check": "tsc --noEmit",
     "backup-db": "ts-node -P tsconfig.scripts.json src/scripts/backup-db.ts",
     "analyze-db": "ts-node -P tsconfig.scripts.json src/scripts/analyze-db.ts"

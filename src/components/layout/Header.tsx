@@ -5,14 +5,16 @@ import { usePathname } from 'next/navigation';
 export function Header() {
   const pathname = usePathname();
 
-  const titles: Record<string, string> = {
-    '/dashboard': 'Dashboard',
-    '/policies': 'Policy Management',
-    '/claims': 'Claims Management',
-    '/settings': 'Settings',
-  };
+  const titleMap: Array<[string, string]> = [
+    ['/dashboard', 'Claims Workbench'],
+    ['/policies', 'Policy Management'],
+    ['/claims', 'Claims Queue'],
+    ['/configuration', 'Platform Configuration'],
+    ['/settings', 'Settings'],
+  ];
 
-  const title = titles[pathname] || 'IntelliPolicy';
+  const title =
+    titleMap.find(([prefix]) => pathname.startsWith(prefix))?.[1] ?? 'IntelliCore';
 
   return (
     <header className="border-b border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
