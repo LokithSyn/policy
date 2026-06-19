@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { readdir, readFile } from 'fs/promises';
 import path from 'path';
-import { errorResponse, successResponse } from '@/lib/api-response';
+import { errorResponse } from '@/lib/api-response';
 
 function extractPolicyNumber(data: any): string | null {
   // Try to extract from top-level policyNumber
