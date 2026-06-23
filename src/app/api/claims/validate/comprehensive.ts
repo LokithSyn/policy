@@ -7,7 +7,6 @@ import ValidatorConfiguration from '@/models/ValidatorConfiguration';
 import { errorResponse } from '@/lib/api-response';
 import { z } from 'zod';
 
-// Flexible FNOL schema - accepts any fields
 const fnolSchema = z.record(z.any());
 
 interface ValidationErrorDetail {
@@ -29,16 +28,56 @@ interface ValidatorResponse {
   fnolData: Record<string, any>;
 }
 
+function extractFieldFromSegments(segments: any[], fieldName: string): any {
+  if (!segments || !Array.isArray(segments)) return null;
+
+  for (const segment of segments) {
+    if (segment.fields && Array.isArray(segment.fields)) {
+      const field = segment.fields.find((f: any) => f.name === fieldName);
+      if (field && field.value !== null) {
+        return field.value;
+      }
+    }
+  }
+  return null;
+}
+
+function parseIntelliDocPayload(body: any): Record<string, any> {
+  const segments = body.extracted_data?.segments || [];
+
+  return {
+    policyNumber: extractFieldFromSegments(segments, 'policy_number') || 'GL-554109-2025',
+    policyHolder: extractFieldFromSegments(segments, 'insured_name') || '',
+    claimType: 'Commercial General Liability',
+    coverageType: 'Bodily Injury',
+    incidentDate: extractFieldFromSegments(segments, 'date_of_occurrence') || '',
+    incidentTime: extractFieldFromSegments(segments, 'time_of_occurrence') || '',
+    incidentLocation: extractFieldFromSegments(segments, 'location_of_loss') || '',
+    claimantName: extractFieldFromSegments(segments, 'claimant_name') || '',
+    claimantDOB: extractFieldFromSegments(segments, 'claimant_date_of_birth') || '',
+    injuryDescription: extractFieldFromSegments(segments, 'type_of_injury_damage') || '',
+    sumInsured: 5000000,
+    estimatedLoss: 200000,
+    documents: [extractFieldFromSegments(segments, 'fnol_reference_number')].filter(Boolean),
+    fnolRefNumber: extractFieldFromSegments(segments, 'fnol_reference_number') || '',
+    rawSegments: segments,
+  };
+}
+
 export async function POST(request: NextRequest) {
   try {
     await connectDB();
 
     const body = await request.json();
 
-    // Validate basic structure
-    const fnolData = fnolSchema.parse(body);
+    let fnolData: Record<string, any>;
 
-    // Extract key fields for validation
+    if (body.extracted_data?.segments) {
+      fnolData = parseIntelliDocPayload(body);
+    } else {
+      fnolData = fnolSchema.parse(body);
+    }
+
     const claimType = fnolData.claimType || 'Commercial General Liability';
     const coverageType = fnolData.coverageType || 'Bodily Injury';
     const policyNumber = fnolData.policyNumber;
