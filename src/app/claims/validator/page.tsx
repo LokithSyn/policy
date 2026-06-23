@@ -111,13 +111,13 @@ export default function ValidatorPage() {
   const [validationPassed, setValidationPassed] = useState<boolean | null>(null);
 
   // Section 5: Integration Configuration
-  const [integrationConfig, setIntegrationConfig] = useState({
+  const integrationConfig = {
     externalApiUrl: 'https://insurance-api.example.com/claims',
     apiKey: '****',
     timeout: 30000,
     retryAttempts: 3,
     notifyOnFailure: true,
-  });
+  };
 
   // Load metadata
   useEffect(() => {
