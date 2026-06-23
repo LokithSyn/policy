@@ -45,22 +45,29 @@ function extractFieldFromSegments(segments: any[], fieldName: string): any {
 function parseIntelliDocPayload(body: any): Record<string, any> {
   const segments = body.extracted_data?.segments || [];
 
+  const policyNumber = extractFieldFromSegments(segments, 'policy_number');
+  const insuredName = extractFieldFromSegments(segments, 'insured_name');
+  const dateOfOccurrence = extractFieldFromSegments(segments, 'date_of_occurrence');
+  const claimantName = extractFieldFromSegments(segments, 'claimant_name');
+  const fnolRefNumber = extractFieldFromSegments(segments, 'fnol_reference_number');
+
   return {
-    policyNumber: extractFieldFromSegments(segments, 'policy_number') || 'GL-554109-2025',
-    policyHolder: extractFieldFromSegments(segments, 'insured_name') || '',
-    claimType: 'Commercial General Liability',
+    policyNumber: policyNumber || null,
+    policyHolder: insuredName || '',
+    claimType: extractFieldFromSegments(segments, 'line_of_business') || 'Commercial General Liability',
     coverageType: 'Bodily Injury',
-    incidentDate: extractFieldFromSegments(segments, 'date_of_occurrence') || '',
+    incidentDate: dateOfOccurrence || '',
     incidentTime: extractFieldFromSegments(segments, 'time_of_occurrence') || '',
     incidentLocation: extractFieldFromSegments(segments, 'location_of_loss') || '',
-    claimantName: extractFieldFromSegments(segments, 'claimant_name') || '',
+    claimantName: claimantName || '',
     claimantDOB: extractFieldFromSegments(segments, 'claimant_date_of_birth') || '',
     injuryDescription: extractFieldFromSegments(segments, 'type_of_injury_damage') || '',
     sumInsured: 5000000,
     estimatedLoss: 200000,
-    documents: [extractFieldFromSegments(segments, 'fnol_reference_number')].filter(Boolean),
-    fnolRefNumber: extractFieldFromSegments(segments, 'fnol_reference_number') || '',
+    documents: fnolRefNumber ? [fnolRefNumber] : [],
+    fnolRefNumber: fnolRefNumber || '',
     rawSegments: segments,
+    sourceSystem: 'IntelliDoc',
   };
 }
 
@@ -68,14 +75,45 @@ export async function POST(request: NextRequest) {
   try {
     await connectDB();
 
-    const body = await request.json();
+    let body: any;
+    try {
+      body = await request.json();
+    } catch (parseError) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Invalid JSON in request body',
+        },
+        { status: 400 }
+      );
+    }
+
+    if (!body) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Request body is required',
+        },
+        { status: 400 }
+      );
+    }
 
     let fnolData: Record<string, any>;
 
-    if (body.extracted_data?.segments) {
-      fnolData = parseIntelliDocPayload(body);
-    } else {
-      fnolData = fnolSchema.parse(body);
+    try {
+      if (body.extracted_data?.segments && Array.isArray(body.extracted_data.segments)) {
+        fnolData = parseIntelliDocPayload(body);
+      } else {
+        fnolData = fnolSchema.parse(body);
+      }
+    } catch (parseError) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Failed to parse payload: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`,
+        },
+        { status: 400 }
+      );
     }
 
     const claimType = fnolData.claimType || 'Commercial General Liability';
