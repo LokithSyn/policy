@@ -38,8 +38,6 @@ export default function ValidatorPage() {
   const [success, setSuccess] = useState('');
 
   // Metadata
-  const [validationTypes, setValidationTypes] = useState<string[]>([]);
-  const [validationSources, setValidationSources] = useState<string[]>([]);
   const [claimTypes, setClaimTypes] = useState<string[]>([]);
   const [coverageTypes, setCoverageTypes] = useState<string[]>([]);
 
@@ -125,20 +123,15 @@ export default function ValidatorPage() {
   useEffect(() => {
     const loadMetadata = async () => {
       try {
-        setLoading(true);
         const res = await fetch('/api/claims/validator');
         const data = await res.json();
 
         if (data.success) {
-          setValidationTypes(data.data.validationTypes);
-          setValidationSources(data.data.validationSources);
           setClaimTypes(data.data.claimTypes);
           setCoverageTypes(data.data.coverageTypes);
         }
       } catch (err) {
         console.error('Error loading metadata:', err);
-      } finally {
-        setLoading(false);
       }
     };
 
