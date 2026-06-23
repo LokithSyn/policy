@@ -4,7 +4,7 @@ import { validatorEngine, ClaimValidationData } from '@/lib/validator-engine';
 import { claimNumberGenerator } from '@/lib/claim-number-generator';
 import Claim from '@/models/Claim';
 import ValidatorConfiguration from '@/models/ValidatorConfiguration';
-import { errorResponse, successResponse } from '@/lib/api-response';
+import { errorResponse } from '@/lib/api-response';
 import { z } from 'zod';
 
 // Flexible FNOL schema - accepts any fields
