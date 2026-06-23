@@ -30,6 +30,9 @@ export default function EditPolicy() {
   const [policy, setPolicy] = useState<PolicyDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [formData, setFormData] = useState({
     policyStatus: '',
     sumInsured: '',
@@ -74,6 +77,8 @@ export default function EditPolicy() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+    setSuccess('');
     try {
       setSaving(true);
 
@@ -92,16 +97,51 @@ export default function EditPolicy() {
       const data = await res.json();
 
       if (data.success) {
-        alert('Policy updated successfully!');
-        router.push(`/policies/detail/${policyNumber}`);
+        setSuccess('Policy updated successfully!');
+        setTimeout(() => {
+          router.push(`/policies/detail/${policyNumber}`);
+        }, 1500);
       } else {
-        alert(`Error: ${data.message}`);
+        setError(data.message || 'Failed to update policy');
       }
     } catch (error) {
       console.error('Error updating policy:', error);
-      alert('Failed to update policy');
+      setError('Failed to update policy');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!window.confirm(`Are you sure you want to delete policy ${policyNumber}? This action cannot be undone.`)) {
+      return;
+    }
+
+    setError('');
+    setSuccess('');
+    try {
+      setDeleting(true);
+
+      const res = await fetch(`/api/policies/${policyNumber}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setSuccess('Policy deleted successfully! Redirecting...');
+        setTimeout(() => {
+          router.push('/policies');
+        }, 1500);
+      } else {
+        setError(data.message || 'Failed to delete policy');
+      }
+    } catch (error) {
+      console.error('Error deleting policy:', error);
+      setError('Failed to delete policy');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -132,6 +172,18 @@ export default function EditPolicy() {
           Back
         </Button>
       </div>
+
+      {/* Messages */}
+      {error && (
+        <div className="rounded-lg bg-red-50 p-4 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+      {success && (
+        <div className="rounded-lg bg-green-50 p-4 text-sm text-green-700">
+          {success}
+        </div>
+      )}
 
       {/* Edit Form */}
       <Card>
@@ -217,21 +269,32 @@ export default function EditPolicy() {
             </div>
 
             {/* Buttons */}
-            <div className="flex gap-2 border-t pt-6">
-              <Button
-                type="submit"
-                variant="primary"
-                disabled={saving}
-              >
-                {saving ? 'Saving...' : 'Save Changes'}
-              </Button>
+            <div className="flex items-center justify-between gap-2 border-t pt-6">
               <Button
                 type="button"
-                variant="ghost"
-                onClick={() => router.back()}
+                variant="destructive"
+                onClick={handleDelete}
+                disabled={deleting || saving}
               >
-                Cancel
+                {deleting ? 'Deleting...' : '🗑️ Delete Policy'}
               </Button>
+              <div className="flex gap-2">
+                <Button
+                  type="submit"
+                  variant="primary"
+                  disabled={saving || deleting}
+                >
+                  {saving ? 'Saving...' : 'Save Changes'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => router.back()}
+                  disabled={saving || deleting}
+                >
+                  Cancel
+                </Button>
+              </div>
             </div>
           </form>
         </CardContent>

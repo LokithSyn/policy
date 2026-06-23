@@ -13,3 +13,4 @@ export { Badge } from './Badge';
 export { Skeleton, TableSkeleton, CardSkeleton } from './Skeleton';
 export { Input } from './Input';
 export { Select } from './Select';
+export { Modal } from './Modal';

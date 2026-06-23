@@ -49,3 +49,35 @@ export async function GET(
     );
   }
 }
+
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: { policyNumber: string } }
+) {
+  try {
+    await connectDB();
+
+    const policy = await Policy.findOne({ policyNumber: params.policyNumber });
+
+    if (!policy) {
+      return NextResponse.json(
+        errorResponse('Policy not found'),
+        { status: 404 }
+      );
+    }
+
+    await Policy.deleteOne({ policyNumber: params.policyNumber });
+
+    return NextResponse.json(
+      successResponse({ policyNumber: params.policyNumber }, 'Policy deleted successfully'),
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error('Error deleting policy:', error);
+    const msg = process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : String(error)) : 'Internal server error';
+    return NextResponse.json(
+      errorResponse(msg),
+      { status: 500 }
+    );
+  }
+}

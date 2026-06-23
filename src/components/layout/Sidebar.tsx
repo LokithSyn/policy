@@ -7,7 +7,9 @@ import React, { useState } from 'react';
 const menuItems = [
   { href: '/dashboard', label: 'Workbench', icon: '📊' },
   { href: '/policies', label: 'Policies', icon: '📋' },
+  { href: '/customers', label: 'Customers', icon: '👥' },
   { href: '/claims', label: 'Claims Queue', icon: '🗂' },
+  { href: '/claims/validator', label: 'Validator', icon: '✓' },
   { href: '/configuration', label: 'Configuration', icon: '⚙️' },
   { href: '/settings', label: 'Settings', icon: '🔧' },
 ];

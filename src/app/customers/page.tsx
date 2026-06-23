@@ -15,54 +15,54 @@ import {
 } from '@/components/ui/Table';
 import { Badge } from '@/components/ui/Badge';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import { CreatePolicyModal } from '@/components/CreatePolicyModal';
+import { CreateCustomerModal } from '@/components/CreateCustomerModal';
 
-interface Policy {
-  policyNumber: string;
-  memberName: string;
-  memberId: string;
-  policyType: string;
-  sumInsured: number;
-  status: string;
-  startDate: string;
-  endDate: string;
+interface Customer {
+  customerId: string;
+  fullName: string;
+  email: string;
+  mobile: string;
+  city: string;
+  state: string;
+  customerType: string;
+  createdAt: string;
 }
 
-export default function Policies() {
+export default function Customers() {
   const router = useRouter();
-  const [policies, setPolicies] = useState<Policy[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [customerTypeFilter, setCustomerTypeFilter] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, pages: 0 });
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   useEffect(() => {
     setCurrentPage(1);
-    fetchPolicies(1);
+    fetchCustomers(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, statusFilter]);
+  }, [search, customerTypeFilter]);
 
-  const fetchPolicies = async (page: number) => {
+  const fetchCustomers = async (page: number) => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
       params.append('page', page.toString());
       params.append('limit', '10');
       if (search) params.append('search', search);
-      if (statusFilter) params.append('status', statusFilter);
+      if (customerTypeFilter) params.append('customerType', customerTypeFilter);
 
-      const res = await fetch(`/api/policies?${params.toString()}`);
+      const res = await fetch(`/api/customers?${params.toString()}`);
       const data = await res.json();
 
       if (data.success) {
-        setPolicies(data.data.policies);
+        setCustomers(data.data.customers);
         setPagination(data.data.pagination);
         setCurrentPage(page);
       }
     } catch (error) {
-      console.error('Error fetching policies:', error);
+      console.error('Error fetching customers:', error);
     } finally {
       setLoading(false);
     }
@@ -70,28 +70,7 @@ export default function Policies() {
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= pagination.pages) {
-      fetchPolicies(newPage);
-    }
-  };
-
-  const handleViewPolicy = (policyNumber: string) => {
-    router.push(`/policies/detail/${policyNumber}`);
-  };
-
-  const handleEditPolicy = (policyNumber: string) => {
-    router.push(`/policies/edit/${policyNumber}`);
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Active':
-        return 'success';
-      case 'Expired':
-        return 'error';
-      case 'Suspended':
-        return 'warning';
-      default:
-        return 'default';
+      fetchCustomers(newPage);
     }
   };
 
@@ -99,8 +78,27 @@ export default function Policies() {
     setIsCreateModalOpen(false);
   };
 
-  const handlePolicyCreated = () => {
-    fetchPolicies(1);
+  const handleCustomerCreated = () => {
+    fetchCustomers(1);
+  };
+
+  const handleViewCustomer = (customerId: string) => {
+    router.push(`/customers/${customerId}`);
+  };
+
+  const handleEditCustomer = (customerId: string) => {
+    router.push(`/customers/${customerId}/edit`);
+  };
+
+  const getCustomerTypeColor = (type: string) => {
+    switch (type) {
+      case 'Individual':
+        return 'success';
+      case 'Corporate':
+        return 'warning';
+      default:
+        return 'default';
+    }
   };
 
   return (
@@ -112,21 +110,20 @@ export default function Policies() {
             <div>
               <label className="mb-2 block text-sm font-medium">Search</label>
               <Input
-                placeholder="Search by policy number, name, or ID"
+                placeholder="Search by name, email, mobile, or ID"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
             <div>
-              <label className="mb-2 block text-sm font-medium">Status</label>
+              <label className="mb-2 block text-sm font-medium">Customer Type</label>
               <Select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
+                value={customerTypeFilter}
+                onChange={(e) => setCustomerTypeFilter(e.target.value)}
                 options={[
-                  { value: '', label: 'All Status' },
-                  { value: 'Active', label: 'Active' },
-                  { value: 'Expired', label: 'Expired' },
-                  { value: 'Suspended', label: 'Suspended' },
+                  { value: '', label: 'All Types' },
+                  { value: 'Individual', label: 'Individual' },
+                  { value: 'Corporate', label: 'Corporate' },
                 ]}
               />
             </div>
@@ -135,17 +132,17 @@ export default function Policies() {
                 variant="primary"
                 onClick={() => setIsCreateModalOpen(true)}
               >
-                Create Policy
+                Add New Customer
               </Button>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Policies Table */}
+      {/* Customers Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Policies</CardTitle>
+          <CardTitle>Customers</CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
           {loading ? (
@@ -154,49 +151,53 @@ export default function Policies() {
                 <div key={i} className="h-12 animate-skeleton rounded" />
               ))}
             </div>
-          ) : policies.length > 0 ? (
+          ) : customers.length > 0 ? (
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableHeader>Policy Number</TableHeader>
-                  <TableHeader>Member Name</TableHeader>
-                  <TableHeader>Member ID</TableHeader>
+                  <TableHeader>Customer ID</TableHeader>
+                  <TableHeader>Full Name</TableHeader>
+                  <TableHeader>Email</TableHeader>
+                  <TableHeader>Mobile</TableHeader>
+                  <TableHeader>City</TableHeader>
+                  <TableHeader>State</TableHeader>
                   <TableHeader>Type</TableHeader>
-                  <TableHeader>Sum Insured</TableHeader>
-                  <TableHeader>Status</TableHeader>
+                  <TableHeader>Created</TableHeader>
                   <TableHeader>Actions</TableHeader>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {policies.map((policy) => (
-                  <TableRow key={policy.policyNumber}>
+                {customers.map((customer) => (
+                  <TableRow key={customer.customerId}>
                     <TableCell className="font-mono text-sm">
-                      {policy.policyNumber}
+                      {customer.customerId}
                     </TableCell>
-                    <TableCell>{policy.memberName}</TableCell>
-                    <TableCell>{policy.memberId}</TableCell>
-                    <TableCell>{policy.policyType}</TableCell>
+                    <TableCell>{customer.fullName}</TableCell>
+                    <TableCell className="text-sm">{customer.email}</TableCell>
+                    <TableCell className="text-sm">{customer.mobile}</TableCell>
+                    <TableCell>{customer.city}</TableCell>
+                    <TableCell>{customer.state}</TableCell>
                     <TableCell>
-                      ₹{policy.sumInsured.toLocaleString()}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={getStatusColor(policy.status) as any}>
-                        {policy.status}
+                      <Badge variant={getCustomerTypeColor(customer.customerType) as any}>
+                        {customer.customerType}
                       </Badge>
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {new Date(customer.createdAt).toLocaleDateString()}
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-2">
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleViewPolicy(policy.policyNumber)}
+                          onClick={() => handleViewCustomer(customer.customerId)}
                         >
                           View
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleEditPolicy(policy.policyNumber)}
+                          onClick={() => handleEditCustomer(customer.customerId)}
                         >
                           Edit
                         </Button>
@@ -208,12 +209,12 @@ export default function Policies() {
             </Table>
           ) : (
             <div className="py-12 text-center text-slate-500">
-              No policies found
+              No customers found
             </div>
           )}
 
           {/* Pagination */}
-          {policies.length > 0 && (
+          {customers.length > 0 && (
             <div className="mt-6 space-y-4 border-t pt-4">
               <div className="text-sm text-slate-600">
                 Page {pagination.page} of {pagination.pages} | Total: {pagination.total} records
@@ -266,11 +267,11 @@ export default function Policies() {
         </CardContent>
       </Card>
 
-      {/* Create Policy Modal */}
-      <CreatePolicyModal
+      {/* Create Customer Modal */}
+      <CreateCustomerModal
         isOpen={isCreateModalOpen}
         onClose={handleModalClose}
-        onSuccess={handlePolicyCreated}
+        onSuccess={handleCustomerCreated}
       />
     </div>
   );
