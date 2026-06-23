@@ -215,13 +215,14 @@ export async function POST(request: NextRequest) {
         claimId: claimNumber,
         claimNumber,
         policyId: `POL-${policyNumber}`,
-        policyNumber,
-        claimType,
+        claimType: 'THIRD_PARTY',
         incidentDate: fnolData.incidentDate ? new Date(fnolData.incidentDate) : new Date(),
         claimAmount: validationData.estimatedLoss,
         approvedAmount: 0,
-        claimStatus: 'REGISTERED',
-        fnolData,
+        claimStatus: 'PENDING',
+        workflowStatus: 'VALIDATED',
+        description: fnolData.injuryDescription || 'Claim from IntelliDoc',
+        incidentLocation: fnolData.incidentLocation,
       });
 
       // Append claim number to FNOL data
