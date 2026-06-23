@@ -71,7 +71,7 @@ export default function ValidatorPage() {
   ]);
 
   // Section 3: Validation Configuration
-  const [validationConfigs, setValidationConfigs] = useState<ValidationConfig[]>([
+  const validationConfigs: ValidationConfig[] = [
     {
       fieldName: 'Policy Number',
       validationType: 'Exact Match',
@@ -104,7 +104,7 @@ export default function ValidatorPage() {
       priority: 4,
       required: true,
     },
-  ]);
+  ];
 
   // Section 4: Validation Results
   const [validationResults, setValidationResults] = useState<ValidationResult[]>([]);
