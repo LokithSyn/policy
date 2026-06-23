@@ -33,7 +33,6 @@ interface ValidationResult {
 }
 
 export default function ValidatorPage() {
-  const [loading, setLoading] = useState(false);
   const [validating, setValidating] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
