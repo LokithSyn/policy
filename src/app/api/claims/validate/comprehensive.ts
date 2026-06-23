@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/lib/db/mongodb';
-import { validatorEngine, ClaimValidationData, ValidationResult } from '@/lib/validator-engine';
+import { validatorEngine, ClaimValidationData } from '@/lib/validator-engine';
 import { claimNumberGenerator } from '@/lib/claim-number-generator';
 import Claim from '@/models/Claim';
 import ValidatorConfiguration from '@/models/ValidatorConfiguration';
