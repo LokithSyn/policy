@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
       const claimNumber = await claimNumberGenerator.generateClaimNumber(claimNumberConfig);
 
       // Create claim record
-      const claim = await Claim.create({
+      await Claim.create({
         claimId: claimNumber,
         claimNumber,
         policyId: `POL-${policyNumber}`,
