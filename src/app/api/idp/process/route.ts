@@ -3,41 +3,54 @@ import { readdir, readFile } from 'fs/promises';
 import path from 'path';
 import { errorResponse } from '@/lib/api-response';
 
-function extractPolicyNumber(data: any): string | null {
-  // Try to extract from top-level policyNumber
-  if (data.policyNumber && typeof data.policyNumber === 'string') {
-    return data.policyNumber.trim();
+// Returns true if a key looks like a policy number field name
+function isPolicyKey(key: string): boolean {
+  const k = key.toLowerCase().replace(/[\s_-]/g, '');
+  return k === 'policynumber' || k === 'policyno' || k === 'polno' || k === 'policy';
+}
+
+// Recursively walks any JSON structure and returns the first policy number value found
+function deepExtractPolicyNumber(node: any, depth = 0): string | null {
+  if (depth > 10 || node === null || node === undefined) return null;
+
+  // { name: "policy_number", value: "..." } — IntelliDoc field object
+  if (
+    typeof node === 'object' &&
+    !Array.isArray(node) &&
+    typeof node.name === 'string' &&
+    isPolicyKey(node.name) &&
+    node.value
+  ) {
+    return String(node.value).trim();
   }
 
-  // Try to extract from nested extracted_data.segments
-  if (data.extracted_data?.segments && Array.isArray(data.extracted_data.segments)) {
-    for (const segment of data.extracted_data.segments) {
-      if (segment.fields && Array.isArray(segment.fields)) {
-        const policyField = segment.fields.find(
-          (f: any) => f.name === 'policy_number' && f.value
-        );
-        if (policyField?.value) {
-          return policyField.value.trim();
-        }
+  if (Array.isArray(node)) {
+    for (const item of node) {
+      const found = deepExtractPolicyNumber(item, depth + 1);
+      if (found) return found;
+    }
+    return null;
+  }
+
+  if (typeof node === 'object') {
+    // Direct key match: { policy_number: "...", policyNumber: "...", etc. }
+    for (const key of Object.keys(node)) {
+      if (isPolicyKey(key) && node[key] && typeof node[key] === 'string') {
+        return node[key].trim();
       }
     }
-  }
-
-  // Try to extract from external_segments
-  if (data.extracted_data?.external_segments && Array.isArray(data.extracted_data.external_segments)) {
-    for (const segment of data.extracted_data.external_segments) {
-      if (segment.fields && Array.isArray(segment.fields)) {
-        const policyField = segment.fields.find(
-          (f: any) => f.name === 'policy_number' && f.value
-        );
-        if (policyField?.value) {
-          return policyField.value.trim();
-        }
-      }
+    // Recurse into all child values
+    for (const key of Object.keys(node)) {
+      const found = deepExtractPolicyNumber(node[key], depth + 1);
+      if (found) return found;
     }
   }
 
   return null;
+}
+
+function extractPolicyNumber(data: any): string | null {
+  return deepExtractPolicyNumber(data);
 }
 
 export async function POST(request: NextRequest) {
