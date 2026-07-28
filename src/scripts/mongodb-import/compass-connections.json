@@ -1,0 +1,24 @@
+{
+  "type": "Compass Connections",
+  "version": {
+    "$numberInt": "1"
+  },
+  "connections": [
+    {
+      "id": "c8a2dada-81cc-48f3-ad89-731f91bf58f2",
+      "lastUsed": {
+        "$date": {
+          "$numberLong": "1784888475435"
+        }
+      },
+      "favorite": {
+        "name": "cluster0.lvzabra.mongodb.net"
+      },
+      "savedConnectionType": "recent",
+      "connectionOptions": {
+        "connectionString": "mongodb+srv://idp_db_user@cluster0.lvzabra.mongodb.net/intellidoc?appName=Cluster0",
+        "oidc": {}
+      }
+    }
+  ]
+}

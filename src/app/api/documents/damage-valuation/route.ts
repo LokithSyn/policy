@@ -115,7 +115,7 @@ export async function GET(request: NextRequest) {
 
 interface IntelliDocField {
   name: string;
-  value: string;
+  value: string | { text?: string; value?: string } | null | undefined;
   confidence?: number;
   sourceText?: string;
   bbox?: string;
@@ -144,21 +144,41 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  const claimField = fields.find(
-    (f) => f.name?.toLowerCase().replace(/[\s_-]/g, '') === 'claimnumber'
+  const CLAIM_FIELD_ALIASES = new Set([
+    'claimnumber',
+    'claimno',
+    'claimnum',
+    'claimid',
+    'claim',
+  ]);
+
+  const claimField = fields.find((f) =>
+    CLAIM_FIELD_ALIASES.has(f.name?.toLowerCase().replace(/[\s_#-]/g, '') ?? '')
   );
 
   if (!claimField) {
+    const receivedFieldNames = fields.map((f) => f.name).filter(Boolean);
     return NextResponse.json(
-      errorResponse('claim_number field not found in payload'),
+      errorResponse(
+        `claim_number field not found in payload (received fields: ${
+          receivedFieldNames.length ? receivedFieldNames.join(', ') : 'none'
+        })`
+      ),
       { status: 422 }
     );
   }
 
-  const extractedClaimNumber = String(claimField.value ?? '').trim();
+  // IntelliDoc sometimes nests the value as { text } or { value } instead of a raw string.
+  const rawValue =
+    claimField.value && typeof claimField.value === 'object'
+      ? ((claimField.value as Record<string, unknown>).text ??
+        (claimField.value as Record<string, unknown>).value)
+      : claimField.value;
+
+  const extractedClaimNumber = String(rawValue ?? '').trim();
   if (!extractedClaimNumber) {
     return NextResponse.json(
-      errorResponse('claim_number value is empty in payload'),
+      errorResponse(`claim_number value is empty in payload (field name: '${claimField.name}')`),
       { status: 422 }
     );
   }
